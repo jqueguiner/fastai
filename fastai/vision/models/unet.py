@@ -1,6 +1,8 @@
 from ...torch_core import *
 from ...layers import *
 from ...callbacks.hooks import *
+from packaging import version
+import torch
 
 __all__ = ['DynamicUnet', 'UnetBlock']
 
@@ -29,7 +31,10 @@ class UnetBlock(Module):
         up_out = self.shuf(up_in)
         ssh = s.shape[-2:]
         if ssh != up_out.shape[-2:]:
-            up_out = F.interpolate(up_out, s.shape[-2:], mode='nearest', recompute_scale_factor=True)
+            if version.parse(torch.__version__) < version.parse("1.5")
+                up_out = F.interpolate(up_out, s.shape[-2:], mode='nearest')
+            else:
+                up_out = F.interpolate(up_out, s.shape[-2:], mode='nearest', recompute_scale_factor=True)
         cat_x = self.relu(torch.cat([up_out, self.bn(s)], dim=1))
         return self.conv2(self.conv1(cat_x))
 
@@ -64,7 +69,11 @@ class DynamicUnet(SequentialEx):
         ni = x.shape[1]
         if imsize != sfs_szs[0][-2:]: layers.append(PixelShuffle_ICNR(ni, **kwargs))
         x = PixelShuffle_ICNR(ni)(x)
-        if imsize != x.shape[-2:]: layers.append(Lambda(lambda x: F.interpolate(x, imsize, mode='nearest', recompute_scale_factor=True)))
+        if imsize != x.shape[-2:]: 
+            if version.parse(torch.__version__) < version.parse("1.5")
+                layers.append(Lambda(lambda x: F.interpolate(x, imsize, mode='nearest')))
+            else:
+                layers.append(Lambda(lambda x: F.interpolate(x, imsize, mode='nearest', recompute_scale_factor=True)))
         if last_cross:
             layers.append(MergeLayer(dense=True))
             ni += in_channels(encoder)
