@@ -31,7 +31,7 @@ class UnetBlock(Module):
         up_out = self.shuf(up_in)
         ssh = s.shape[-2:]
         if ssh != up_out.shape[-2:]:
-            if version.parse(torch.__version__) < version.parse("1.5")
+            if version.parse(torch.__version__) < version.parse("1.5"):
                 up_out = F.interpolate(up_out, s.shape[-2:], mode='nearest')
             else:
                 up_out = F.interpolate(up_out, s.shape[-2:], mode='nearest', recompute_scale_factor=True)
@@ -70,7 +70,7 @@ class DynamicUnet(SequentialEx):
         if imsize != sfs_szs[0][-2:]: layers.append(PixelShuffle_ICNR(ni, **kwargs))
         x = PixelShuffle_ICNR(ni)(x)
         if imsize != x.shape[-2:]: 
-            if version.parse(torch.__version__) < version.parse("1.5")
+            if version.parse(torch.__version__) < version.parse("1.5"):
                 layers.append(Lambda(lambda x: F.interpolate(x, imsize, mode='nearest')))
             else:
                 layers.append(Lambda(lambda x: F.interpolate(x, imsize, mode='nearest', recompute_scale_factor=True)))
