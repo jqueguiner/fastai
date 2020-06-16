@@ -540,7 +540,7 @@ def _grid_sample(x:TensorImage, coords:FlowField, mode:str='bilinear', padding_m
         d = min(x.shape[1]/coords.shape[1], x.shape[2]/coords.shape[2])/2
         # If we're resizing up by >200%, and we're zooming less than that, interpolate first
         if d>1 and d>z:
-            if version.parse(torch.__version__) < version.parse("1.5") 
+            if version.parse(torch.__version__) < version.parse("1.5"):
                 x = F.interpolate(x[None], scale_factor=1/d, mode='area')[0]
             else:
                 x = F.interpolate(x[None], scale_factor=1/d, mode='area', recompute_scale_factor=True)[0]
